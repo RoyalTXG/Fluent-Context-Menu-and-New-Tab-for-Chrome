@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 280px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+           background: #1c1c23; color: #e8e8ee; font-size: 13px; }
+
+    .header { padding: 14px 16px 10px; border-bottom: 0.5px solid rgba(255,255,255,.1);
+              font-weight: 600; font-size: 14px; }
+
+    .section { padding: 10px 16px; border-bottom: 0.5px solid rgba(255,255,255,.06); }
+    .section label { display: block; font-size: 11px; color: rgba(255,255,255,.4);
+                     text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+
+    .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .theme-btn  { padding: 7px; border-radius: 8px; border: 1px solid rgba(255,255,255,.1);
+                  background: rgba(255,255,255,.05); color: #e8e8ee; cursor: pointer;
+                  font-size: 12px; text-align: center; transition: all .15s; }
+    .theme-btn.active,
+    .theme-btn:hover { background: rgba(100,160,255,.2); border-color: rgba(100,160,255,.5); }
+
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .row span { font-size: 11px; color: rgba(255,255,255,.45); min-width: 36px; text-align: right; }
+    input[type="range"] { flex: 1; accent-color: #60a5fa; cursor: pointer; }
+
+    .footer { padding: 10px 16px; font-size: 11px;
+              color: rgba(255,255,255,.3); text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="header">Fluent Context Menu</div>
+
+  <div class="section">
+    <label>Features</label>
+    <div class="row">
+      <input type="checkbox" id="enableNewTab" style="flex:none; cursor:pointer;">
+      <span style="text-align:left; color:#e8e8ee;">Enable Custom New Tab</span>
+    </div>
+    <div class="row">
+      <input type="checkbox" id="showSearchBar" style="flex:none; cursor:pointer;">
+      <span style="text-align:left; color:#e8e8ee;">Show New Tab Search</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <label>Theme</label>
+    <div class="theme-grid">
+      <button class="theme-btn active" data-theme="dark">🌙 Dark</button>
+      <button class="theme-btn"        data-theme="light">☀️ Light</button>
+      <button class="theme-btn"        data-theme="ocean">🌊 Ocean</button>
+      <button class="theme-btn"        data-theme="midnight">🌌 Midnight</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <label>Transparency</label>
+    <div class="row">
+      <input type="range" id="opacity" min="40" max="100" step="1" value="85">
+      <span id="opacityVal">85%</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <label>Blur Amount</label>
+    <div class="row">
+      <input type="range" id="blur" min="0" max="40" step="1" value="20">
+      <span id="blurVal">20px</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <label>Corner Radius</label>
+    <div class="row">
+      <input type="range" id="radius" min="0" max="20" step="1" value="10">
+      <span id="radiusVal">10px</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <label>Font Size</label>
+    <div class="row">
+      <input type="range" id="fontSize" min="11" max="16" step="1" value="13">
+      <span id="fontSizeVal">13px</span>
+    </div>
+  </div>
+
+  <div class="footer">Need to restart Chrome for it to work</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
