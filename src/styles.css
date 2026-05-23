@@ -1,0 +1,62 @@
+@keyframes fluentIn {
+  from { opacity: 0; transform: scale(.95) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+#fluent-ctx-menu * {
+  box-sizing: border-box;
+}
+
+.fctx-icon {
+  width: 20px;
+  text-align: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.fctx-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fctx-key {
+  font-size: 11px;
+  opacity: 0.45;
+  font-family: "SF Mono", "Cascadia Code", monospace;
+  white-space: nowrap;
+}
+
+#fluent-ctx-menu [role="menuitem"]:focus {
+  outline: none;
+}
+
+#fluent-ctx-menu [role="menuitem"]:focus-visible {
+  outline: 2px solid rgba(100,160,255,.6);
+  outline-offset: -2px;
+}
+
+.fctx-has-sub::after {
+  content: '›';
+  font-size: 16px;
+  opacity: 0.5;
+  margin-left: auto;
+}
+
+.fctx-danger {
+  color: #f87171 !important;
+}
+
+.fctx-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+#fluent-ctx-menu.fctx-scroll {
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.2) transparent;
+}
