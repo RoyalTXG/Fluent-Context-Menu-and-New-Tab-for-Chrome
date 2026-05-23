@@ -4,6 +4,8 @@
 
 Fluent Context Menu is a modern Chrome extension built on Manifest V3. It replaces the native browser context menu with a highly customizable, Fluent Design-inspired interface. Additionally, it overrides the default new tab page with a minimalist dashboard featuring integrated search and advanced image upload capabilities.
 
+Note: I have not uploaded this on Chrome extension webstore because I don't want to pay the 5$ registration fee.
+
 ## Features
 
 ### Dynamic Context Menu
