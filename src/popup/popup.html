@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 320px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+           background: #1c1c23; color: #e8e8ee; font-size: 13px; padding-bottom: 4px; }
+    .header { padding: 14px 16px 10px; border-bottom: 0.5px solid rgba(255,255,255,.08);
+              font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .header .badge { font-size: 9px; font-weight: 400; background: rgba(100,160,255,.2);
+                     color: #90c4ff; padding: 2px 6px; border-radius: 10px; }
+    .section { padding: 10px 16px; border-bottom: 0.5px solid rgba(255,255,255,.05); }
+    .section:last-of-type { border-bottom: none; }
+    .section > .title { display: block; font-size: 10px; color: rgba(255,255,255,.35);
+                        text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+
+    .theme-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; }
+    .theme-btn { padding: 6px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,.08);
+                 background: rgba(255,255,255,.03); color: #e8e8ee; cursor: pointer;
+                 font-size: 11px; text-align: center; transition: all .15s; }
+    .theme-btn .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                          vertical-align: middle; margin-right: 3px; border: 0.5px solid rgba(255,255,255,.1); }
+    .theme-btn.active, .theme-btn:hover { background: rgba(100,160,255,.15); border-color: rgba(100,160,255,.4); }
+    .theme-btn.active { border-color: rgba(100,160,255,.6); box-shadow: 0 0 8px rgba(100,160,255,.15); }
+
+    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .row:last-child { margin-bottom: 0; }
+    .row .val { font-size: 11px; color: rgba(255,255,255,.4); min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+    input[type="range"] { flex: 1; accent-color: #60a5fa; cursor: pointer; height: 4px; }
+    input[type="checkbox"] { flex: none; cursor: pointer; accent-color: #60a5fa; }
+    .toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .toggle-row label { margin: 0; text-transform: none; letter-spacing: 0; font-size: 12px; color: rgba(255,255,255,.7); cursor: pointer; }
+    .toggle-row .toggle-desc { font-size: 10px; color: rgba(255,255,255,.25); margin-left: auto; }
+
+    .footer { padding: 8px 16px; font-size: 10px; color: rgba(255,255,255,.2);
+              text-align: center; display: flex; justify-content: center; gap: 12px; }
+    .footer a { color: rgba(100,160,255,.5); text-decoration: none; cursor: pointer; }
+    .footer a:hover { color: rgba(100,160,255,.8); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    Fluent Context Menu
+    <span class="badge">v2.0</span>
+  </div>
+
+  <div class="section">
+    <span class="title">Features</span>
+    <div class="toggle-row">
+      <input type="checkbox" id="enableNewTab">
+      <label for="enableNewTab">Custom New Tab</label>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="showSearchBar">
+      <label for="showSearchBar">New Tab Search Bar</label>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="timeTrackerEnabled">
+      <label for="timeTrackerEnabled">Time Tracker</label>
+      <span class="toggle-desc">daily stats</span>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="showGames">
+      <label for="showGames">Games (Snake + Wordle)</label>
+      <span class="toggle-desc">new tab</span>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="showSpeedTest">
+      <label for="showSpeedTest">Speed Test</label>
+      <span class="toggle-desc">new tab</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="title">Theme</span>
+    <div class="theme-grid">
+      <button class="theme-btn active" data-theme="dark"><span class="swatch" style="background:#1c1c23"></span>Dark</button>
+      <button class="theme-btn" data-theme="light"><span class="swatch" style="background:#f5f5fa"></span>Light</button>
+      <button class="theme-btn" data-theme="ocean"><span class="swatch" style="background:#0a1932"></span>Ocean</button>
+      <button class="theme-btn" data-theme="midnight"><span class="swatch" style="background:#08080c"></span>Midnight</button>
+      <button class="theme-btn" data-theme="nord"><span class="swatch" style="background:#2e3440"></span>Nord</button>
+      <button class="theme-btn" data-theme="forest"><span class="swatch" style="background:#142319"></span>Forest</button>
+      <button class="theme-btn" data-theme="sunset"><span class="swatch" style="background:#281419"></span>Sunset</button>
+      <button class="theme-btn" data-theme="dracula"><span class="swatch" style="background:#282036"></span>Dracula</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="title">Bookmarks</span>
+    <div class="toggle-row">
+      <input type="checkbox" id="showBookmarks">
+      <label for="showBookmarks">Show Bookmarks</label>
+    </div>
+    <div style="display:flex;gap:4px;margin-top:6px">
+      <button class="theme-btn" id="bmResetPos" style="flex:1;padding:5px 4px;font-size:10px">Reset Positions</button>
+      <button class="theme-btn" id="bmClearAll" style="flex:1;padding:5px 4px;font-size:10px">Clear All</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="title">Appearance</span>
+    <div class="row">
+      <span style="font-size:11px;color:rgba(255,255,255,.5);min-width:52px;">Opacity</span>
+      <input type="range" id="opacity" min="40" max="100" step="1" value="85">
+      <span class="val" id="opacityVal">85%</span>
+    </div>
+    <div class="row">
+      <span style="font-size:11px;color:rgba(255,255,255,.5);min-width:52px;">Blur</span>
+      <input type="range" id="blur" min="0" max="40" step="1" value="20">
+      <span class="val" id="blurVal">20px</span>
+    </div>
+    <div class="row">
+      <span style="font-size:11px;color:rgba(255,255,255,.5);min-width:52px;">Radius</span>
+      <input type="range" id="radius" min="0" max="20" step="1" value="10">
+      <span class="val" id="radiusVal">10px</span>
+    </div>
+    <div class="row">
+      <span style="font-size:11px;color:rgba(255,255,255,.5);min-width:52px;">Font</span>
+      <input type="range" id="fontSize" min="11" max="18" step="1" value="13">
+      <span class="val" id="fontSizeVal">13px</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a id="resetBtn">Reset to Defaults</a>
+    <span>|</span>
+    <span>Changes apply instantly</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

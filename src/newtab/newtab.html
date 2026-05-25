@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New Tab</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ntp-bg: #0f0f14; --ntp-card: rgba(255,255,255,.06); --ntp-text: #e8e8ee;
+      --ntp-sub: rgba(255,255,255,.45); --ntp-border: rgba(255,255,255,.10);
+      --ntp-input: rgba(255,255,255,.08); --ntp-placeholder: rgba(255,255,255,.30);
+      --ntp-accent: #90c4ff;
+    }
+    body {
+      min-height: 100vh;
+      background: var(--ntp-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ntp-text);
+      user-select: none;
+      padding: 40px 20px 20px;
+      transition: background .3s, color .3s;
+    }
+    .clock { font-size: 86px; font-weight: 200; letter-spacing: -3px; line-height: 1; margin-bottom: 10px; }
+    .date { font-size: 15px; color: var(--ntp-sub); margin-bottom: 32px; letter-spacing: .02em; }
+    .search-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 520px; }
+    .search-tabs { display: flex; gap: 4px; background: var(--ntp-card); border-radius: 20px; padding: 3px; border: 0.5px solid var(--ntp-border); }
+    .search-tab { padding: 5px 18px; border-radius: 16px; border: none; background: transparent; color: var(--ntp-sub); font-size: 12px; cursor: pointer; transition: all .15s; }
+    .search-tab.active { background: color-mix(in srgb, var(--ntp-accent) 25%, transparent); color: var(--ntp-accent); }
+    .search-row { display: flex; width: 100%; background: var(--ntp-input); border: 0.5px solid var(--ntp-border); border-radius: 14px; overflow: hidden; transition: border .2s, background .2s; }
+    .search-row:focus-within { border-color: var(--ntp-accent); background: color-mix(in srgb, var(--ntp-input) 80%, white); }
+    .search-input { flex: 1; padding: 14px 18px; background: transparent; border: none; color: var(--ntp-text); font-size: 15px; outline: none; }
+    .search-input::placeholder { color: var(--ntp-placeholder); }
+    .search-btn { padding: 0 20px; background: transparent; border: none; border-left: 0.5px solid var(--ntp-border); color: var(--ntp-sub); cursor: pointer; font-size: 18px; transition: color .15s, background .15s; }
+    .search-btn:hover { background: var(--ntp-card); color: var(--ntp-accent); }
+    .image-dropzone { display: none; width: 100%; border: 1.5px dashed var(--ntp-border); background: var(--ntp-card); border-radius: 14px; padding: 30px 20px; text-align: center; cursor: pointer; transition: all .2s; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
+    .image-dropzone:hover { border-color: var(--ntp-accent); background: color-mix(in srgb, var(--ntp-accent) 8%, transparent); }
+    .dropzone-text { color: var(--ntp-sub); font-size: 14px; }
+    .image-preview { display: none; max-height: 160px; max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .uploading-text { display: none; margin-top: 12px; font-size: 12px; color: var(--ntp-accent); letter-spacing: 0.5px; }
+
+    .widgets { width: 520px; margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+    .widget-toggle { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 10px; background: var(--ntp-card); border: 0.5px solid var(--ntp-border); cursor: pointer; transition: all .15s; font-size: 12px; color: var(--ntp-sub); }
+    .widget-toggle:hover { background: color-mix(in srgb, var(--ntp-accent) 8%, transparent); border-color: color-mix(in srgb, var(--ntp-accent) 30%, transparent); }
+    .widget-toggle .arrow { margin-left: auto; transition: transform .2s; font-size: 10px; color: var(--ntp-sub); }
+    .widget-toggle.open .arrow { transform: rotate(180deg); }
+    .widget-body { display: none; }
+    .widget-body.open { display: block; }
+
+    .stats-row { display: flex; gap: 12px; margin-bottom: 8px; width: 100%; }
+    .stat-card { flex: 1; padding: 12px 14px; border-radius: 10px; background: var(--ntp-card); border: 0.5px solid var(--ntp-border); }
+    .stat-card .stat-val { font-size: 18px; font-weight: 500; color: var(--ntp-text); }
+    .stat-card .stat-lbl { font-size: 10px; color: var(--ntp-sub); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+
+    .badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 500; margin-left: 6px; }
+    .badge-new { background: color-mix(in srgb, var(--ntp-accent) 25%, transparent); color: var(--ntp-accent); }
+
+    /* ── Bookmark Canvas ───────────────────────────────────────────── */
+    .bm-section { width: 100%; margin-top: 28px; flex: 1; }
+    .bm-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; padding: 0 4px; }
+    .bm-header .bm-add-btn { width: 22px; height: 22px; border-radius: 6px; border: 0.5px solid var(--ntp-border); background: var(--ntp-card); color: var(--ntp-accent); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; line-height: 1; }
+    .bm-header .bm-add-btn:hover { background: color-mix(in srgb, var(--ntp-accent) 15%, transparent); border-color: var(--ntp-accent); }
+    .bm-header .bm-help { margin-left: auto; cursor: pointer; font-size: 11px; color: var(--ntp-sub); width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 0.5px solid var(--ntp-border); transition: all .15s; }
+    .bm-header .bm-help:hover { background: var(--ntp-card); color: var(--ntp-accent); border-color: var(--ntp-accent); }
+    .bm-canvas { position: relative; min-height: 120px; width: 100%; }
+
+    .bm-item { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 6px 6px; border-radius: 10px; cursor: grab; transition: background .15s, box-shadow .15s; }
+    .bm-item:hover { background: var(--ntp-card); box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+    .bm-item:active { cursor: grabbing; }
+    .bm-item-link { cursor: pointer; }
+    .bm-icon { width: 28px; height: 28px; border-radius: 6px; pointer-events: none; }
+    .bm-label { font-size: 11px; font-weight: 450; color: var(--ntp-sub); max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; pointer-events: none; line-height: 1.3; }
+    .bm-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none; }
+    .bm-del { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; border-radius: 50%; border: none; background: #f87171; color: #fff; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; line-height: 1; opacity: 0; transition: opacity .15s; }
+    .bm-item:hover .bm-del { display: flex; opacity: 1; }
+    .bm-resize { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; cursor: nwse-resize; display: none; }
+    .bm-resize::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 6px; height: 2px; background: var(--ntp-sub); transform: rotate(-45deg); border-radius: 1px; }
+    .bm-resize::before { content: ''; position: absolute; bottom: 5px; right: 2px; width: 4px; height: 2px; background: var(--ntp-sub); transform: rotate(-45deg); border-radius: 1px; }
+    .bm-item:hover .bm-resize { display: block; }
+    .bm-ctx { position: absolute; top: -4px; left: -4px; width: 16px; height: 16px; border-radius: 50%; border: 0.5px solid var(--ntp-border); background: var(--ntp-bg); color: var(--ntp-sub); font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; line-height: 1; opacity: 0; transition: opacity .15s; }
+    .bm-item:hover .bm-ctx { display: flex; opacity: 1; }
+
+    /* ── Context Menu ──────────────────────────────────────── */
+    .bm-ctx-menu { position: fixed; z-index: 999999; background: var(--ntp-bg); border: 0.5px solid var(--ntp-border); border-radius: 8px; padding: 4px; min-width: 130px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+    .bm-ctx-item { padding: 7px 12px; font-size: 12px; color: var(--ntp-text); cursor: pointer; border-radius: 4px; }
+    .bm-ctx-item:hover { background: var(--ntp-card); }
+    .bm-ctx-danger { color: #f87171; }
+
+    /* ── Modal ────────────────────────────────────────────────── */
+    .bm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(4px); }
+    .bm-modal { background: var(--ntp-bg); border: 0.5px solid var(--ntp-border); border-radius: 14px; padding: 24px; min-width: 340px; max-width: 420px; box-shadow: 0 8px 40px rgba(0,0,0,.5); }
+    .bm-modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 16px; color: var(--ntp-text); }
+    .bm-modal-body { margin-bottom: 16px; }
+    .bm-modal-tabs { display: flex; gap: 4px; background: var(--ntp-card); border-radius: 10px; padding: 3px; margin-bottom: 14px; }
+    .bm-tab { flex: 1; padding: 7px 12px; border-radius: 8px; border: none; background: transparent; color: var(--ntp-sub); font-size: 12px; cursor: pointer; transition: all .15s; }
+    .bm-tab.active { background: color-mix(in srgb, var(--ntp-accent) 25%, transparent); color: var(--ntp-accent); }
+    .bm-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 0.5px solid var(--ntp-border); background: var(--ntp-input); color: var(--ntp-text); font-size: 13px; outline: none; margin-bottom: 8px; }
+    .bm-input:focus { border-color: var(--ntp-accent); }
+    .bm-preview { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ntp-sub); min-height: 24px; padding: 4px 0; }
+    .bm-dropzone { border: 1.5px dashed var(--ntp-border); border-radius: 10px; padding: 28px; text-align: center; cursor: pointer; transition: all .15s; font-size: 13px; color: var(--ntp-sub); }
+    .bm-dropzone:hover { border-color: var(--ntp-accent); background: var(--ntp-card); }
+    .bm-or { text-align: center; font-size: 11px; color: var(--ntp-sub); padding: 8px 0; }
+    .bm-modal-footer { display: flex; gap: 8px; justify-content: flex-end; }
+    .bm-btn { padding: 8px 20px; border-radius: 8px; border: none; font-size: 13px; cursor: pointer; font-weight: 500; transition: all .15s; }
+    .bm-btn-primary { background: color-mix(in srgb, var(--ntp-accent) 30%, transparent); color: var(--ntp-accent); }
+    .bm-btn-primary:hover { background: color-mix(in srgb, var(--ntp-accent) 50%, transparent); }
+    .bm-btn-secondary { background: var(--ntp-card); color: var(--ntp-sub); border: 0.5px solid var(--ntp-border); }
+    .bm-btn-secondary:hover { background: var(--ntp-input); }
+  </style>
+</head>
+<body>
+
+  <div class="clock" id="clock">--:--</div>
+  <div class="date" id="date">Loading...</div>
+
+  <div class="search-wrap">
+    <div class="search-tabs">
+      <button class="search-tab active" id="tab-web">🌐 Web</button>
+      <button class="search-tab" id="tab-img">🖼️ Images</button>
+      <button class="search-tab" id="tab-video">▶️ Videos</button>
+      <button class="search-tab" id="tab-revImg">📸 Reverse Image</button>
+    </div>
+    <div class="search-row" id="textSearchContainer">
+      <input class="search-input" id="searchInput" type="text" placeholder="Search Google..." autocomplete="off" spellcheck="false">
+      <button class="search-btn" id="searchBtn">🔍</button>
+    </div>
+    <div class="image-dropzone" id="imageDropzone">
+      <div class="dropzone-text" id="dropzoneText">🖼️ Click to Upload or Paste an Image (Ctrl+V)</div>
+      <img class="image-preview" id="imagePreview">
+      <div class="uploading-text" id="uploadingText">Uploading to Google Lens...</div>
+    </div>
+    <input type="file" id="imageUpload" accept="image/*" style="display: none !important; opacity: 0; position: absolute; z-index: -1;">
+  </div>
+
+  <div class="widgets">
+    <div class="stats-row" id="statsRow" style="display:none">
+      <div class="stat-card">
+        <div class="stat-val" id="timeToday">0m</div>
+        <div class="stat-lbl">Time Online Today</div>
+      </div>
+    </div>
+
+    <div id="widgetSpeed" style="display:none">
+      <div class="widget-toggle" id="toggleSpeed">
+        <span>🚀 Speed Test</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="widget-body" id="bodySpeed"></div>
+    </div>
+
+    <div id="widgetSnake" style="display:none">
+      <div class="widget-toggle" id="toggleSnake">
+        <span>🐍 Snake Game</span>
+        <span class="badge badge-new">2D B&amp;W</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="widget-body" id="bodySnake"></div>
+    </div>
+
+    <div id="widgetWordle" style="display:none">
+      <div class="widget-toggle" id="toggleWordle">
+        <span>📝 Wordle</span>
+        <span class="badge badge-new">Daily</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="widget-body" id="bodyWordle"></div>
+    </div>
+  </div>
+
+  <div class="bm-section">
+    <div class="bm-header">
+      <button class="bm-add-btn" id="bmAddBtn" title="Add bookmark">+</button>
+      <div class="bm-help" id="bmHelpBtn" title="How to add bookmarks">?</div>
+    </div>
+    <div class="bm-canvas" id="bmCanvas">
+    </div>
+  </div>
+
+  <script src="../content.js"></script>
+  <script src="games.js"></script>
+  <script src="speedtest.js"></script>
+  <script src="bookmarks.js"></script>
+  <script src="newtab.js"></script>
+</body>
+</html>
