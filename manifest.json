@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Fluent Context Menu",
+  "name": "Fluent",
   "version": "2.0.0",
   "permissions": [
     "storage",

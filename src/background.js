@@ -66,8 +66,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 const DEFAULTS = {
   theme: 'dark', opacity: 85, blur: 20, radius: 10, fontSize: 13,
-  enableNewTab: true, showSearchBar: true,
+  enableNewTab: true, showSearchBar: true, enableContextMenu: true,
   timeTrackerEnabled: true, showGames: true, showSpeedTest: true, showBookmarks: true,
+  layoutLocked: true,
 };
 
 chrome.runtime.onInstalled.addListener(() => {

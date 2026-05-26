@@ -12,6 +12,7 @@
       --ntp-accent: #90c4ff;
     }
     body {
+      position: relative;
       min-height: 100vh;
       background: var(--ntp-bg);
       display: flex;
@@ -62,7 +63,7 @@
     .bm-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; padding: 0 4px; }
     .bm-header .bm-add-btn { width: 22px; height: 22px; border-radius: 6px; border: 0.5px solid var(--ntp-border); background: var(--ntp-card); color: var(--ntp-accent); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; line-height: 1; }
     .bm-header .bm-add-btn:hover { background: color-mix(in srgb, var(--ntp-accent) 15%, transparent); border-color: var(--ntp-accent); }
-    .bm-header .bm-help { margin-left: auto; cursor: pointer; font-size: 11px; color: var(--ntp-sub); width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 0.5px solid var(--ntp-border); transition: all .15s; }
+    .bm-header .bm-help { cursor: pointer; font-size: 11px; color: var(--ntp-sub); width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 0.5px solid var(--ntp-border); transition: all .15s; }
     .bm-header .bm-help:hover { background: var(--ntp-card); color: var(--ntp-accent); border-color: var(--ntp-accent); }
     .bm-canvas { position: relative; min-height: 120px; width: 100%; }
 
@@ -108,14 +109,28 @@
     .bm-btn-primary:hover { background: color-mix(in srgb, var(--ntp-accent) 50%, transparent); }
     .bm-btn-secondary { background: var(--ntp-card); color: var(--ntp-sub); border: 0.5px solid var(--ntp-border); }
     .bm-btn-secondary:hover { background: var(--ntp-input); }
+
+    /* ── Layout Manager ─────────────────────────────────────────── */
+    [data-ntp-id] { position: relative; z-index: 1; }
+    [data-ntp-id="stats"],
+    [data-ntp-id="speed"],
+    [data-ntp-id="snake"],
+    [data-ntp-id="wordle"] { width: 520px; }
+    .ntp-resize-handle { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; cursor: nwse-resize; display: none; z-index: 10; }
+    .ntp-resize-handle::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 8px; height: 2px; background: var(--ntp-sub); transform: rotate(-45deg); border-radius: 1px; }
+    .ntp-resize-handle::before { content: ''; position: absolute; bottom: 5px; right: 2px; width: 6px; height: 2px; background: var(--ntp-sub); transform: rotate(-45deg); border-radius: 1px; }
+    [data-ntp-id]:hover .ntp-resize-handle { display: block; }
+    .layout-unlocked [data-ntp-id] { cursor: grab; }
+    .layout-unlocked [data-ntp-id]:active { cursor: grabbing; }
+    .layout-unlocked [data-ntp-id] { outline: 1px dashed var(--ntp-sub); outline-offset: 2px; }
   </style>
 </head>
 <body>
 
-  <div class="clock" id="clock">--:--</div>
-  <div class="date" id="date">Loading...</div>
+  <div class="clock" id="clock" data-ntp-id="clock">--:--</div>
+  <div class="date" id="date" data-ntp-id="date">Loading...</div>
 
-  <div class="search-wrap">
+  <div class="search-wrap" data-ntp-id="search">
     <div class="search-tabs">
       <button class="search-tab active" id="tab-web">🌐 Web</button>
       <button class="search-tab" id="tab-img">🖼️ Images</button>
@@ -134,39 +149,37 @@
     <input type="file" id="imageUpload" accept="image/*" style="display: none !important; opacity: 0; position: absolute; z-index: -1;">
   </div>
 
-  <div class="widgets">
-    <div class="stats-row" id="statsRow" style="display:none">
-      <div class="stat-card">
-        <div class="stat-val" id="timeToday">0m</div>
-        <div class="stat-lbl">Time Online Today</div>
-      </div>
+  <div class="stats-row" id="statsRow" data-ntp-id="stats" style="display:none">
+    <div class="stat-card">
+      <div class="stat-val" id="timeToday">0m</div>
+      <div class="stat-lbl">Time Online Today</div>
     </div>
+  </div>
 
-    <div id="widgetSpeed" style="display:none">
-      <div class="widget-toggle" id="toggleSpeed">
-        <span>🚀 Speed Test</span>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="widget-body" id="bodySpeed"></div>
+  <div id="widgetSpeed" data-ntp-id="speed" style="display:none">
+    <div class="widget-toggle" id="toggleSpeed">
+      <span>🚀 Speed Test</span>
+      <span class="arrow">▼</span>
     </div>
+    <div class="widget-body" id="bodySpeed"></div>
+  </div>
 
-    <div id="widgetSnake" style="display:none">
-      <div class="widget-toggle" id="toggleSnake">
-        <span>🐍 Snake Game</span>
-        <span class="badge badge-new">2D B&amp;W</span>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="widget-body" id="bodySnake"></div>
+  <div id="widgetSnake" data-ntp-id="snake" style="display:none">
+    <div class="widget-toggle" id="toggleSnake">
+      <span>🐍 Snake Game</span>
+      <span class="badge badge-new">2D B&amp;W</span>
+      <span class="arrow">▼</span>
     </div>
+    <div class="widget-body" id="bodySnake"></div>
+  </div>
 
-    <div id="widgetWordle" style="display:none">
-      <div class="widget-toggle" id="toggleWordle">
-        <span>📝 Wordle</span>
-        <span class="badge badge-new">Daily</span>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="widget-body" id="bodyWordle"></div>
+  <div id="widgetWordle" data-ntp-id="wordle" style="display:none">
+    <div class="widget-toggle" id="toggleWordle">
+      <span>📝 Wordle</span>
+      <span class="badge badge-new">Daily</span>
+      <span class="arrow">▼</span>
     </div>
+    <div class="widget-body" id="bodyWordle"></div>
   </div>
 
   <div class="bm-section">

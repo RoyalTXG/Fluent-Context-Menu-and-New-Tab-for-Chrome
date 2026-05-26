@@ -9,7 +9,7 @@ const THEMES = {
   dracula:{bg: 'rgba(40,32,54,{a})',   text: '#f8f8f2', sub: 'rgba(248,248,242,.4)', sep: 'rgba(248,248,242,.1)',  hover: 'rgba(189,147,249,.15)', border: 'rgba(189,147,249,.25)' },
 };
 
-let cfg = { theme:'dark', opacity:85, blur:20, radius:10, fontSize:13 };
+let cfg = { theme:'dark', opacity:85, blur:20, radius:10, fontSize:13, enableContextMenu: true };
 let menu = null;
 
 chrome.storage.sync.get(null, (data) => { if(data) Object.assign(cfg, data); });
@@ -296,6 +296,7 @@ function removeMenu() {
 }
 
 document.addEventListener('contextmenu', e => {
+  if (cfg.enableContextMenu === false) return;
   if (e.shiftKey) return; 
   if (e.target && (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO')) return;
 

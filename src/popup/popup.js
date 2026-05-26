@@ -2,11 +2,12 @@ const $ = (id) => document.getElementById(id);
 
 const DEFAULTS = {
   theme: 'dark', opacity: 85, blur: 20, radius: 10, fontSize: 13,
-  enableNewTab: true, showSearchBar: true,
+  enableNewTab: true, showSearchBar: true, enableContextMenu: true,
   timeTrackerEnabled: true, showGames: true, showSpeedTest: true, showBookmarks: true,
+  layoutLocked: true,
 };
 const SLIDER_KEYS = ['opacity', 'blur', 'radius', 'fontSize'];
-const BOOL_KEYS = ['enableNewTab', 'showSearchBar', 'timeTrackerEnabled', 'showGames', 'showSpeedTest', 'showBookmarks'];
+const BOOL_KEYS = ['enableNewTab', 'showSearchBar', 'enableContextMenu', 'timeTrackerEnabled', 'showGames', 'showSpeedTest', 'showBookmarks', 'layoutLocked'];
 
 chrome.storage.sync.get(null, (cfg) => {
   if (cfg.theme) setActiveTheme(cfg.theme);
@@ -82,7 +83,7 @@ $('bmClearAll')?.addEventListener('click', () => {
   }
 });
 
-$('resetBtn').addEventListener('click', () => {
+$('resetBtn')?.addEventListener('click', () => {
   chrome.storage.sync.set(DEFAULTS, () => {
     SLIDER_KEYS.forEach((key) => {
       $(key).value = DEFAULTS[key];

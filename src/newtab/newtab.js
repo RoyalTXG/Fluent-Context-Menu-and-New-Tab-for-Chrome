@@ -45,9 +45,58 @@ chrome.storage.sync.get(['enableNewTab','showSearchBar','timeTrackerEnabled','sh
   }
 });
 
-// Listen for theme changes from popup
+// Listen for changes from popup
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.theme) applyTheme(changes.theme.newValue);
+  if (changes.showSearchBar) {
+    document.querySelector('.search-wrap').style.display = changes.showSearchBar.newValue ? '' : 'none';
+  }
+  if (changes.timeTrackerEnabled) {
+    const el = document.getElementById('statsRow');
+    if (changes.timeTrackerEnabled.newValue) {
+      el.style.display = 'flex';
+      loadTimeData();
+    } else {
+      el.style.display = 'none';
+    }
+  }
+  if (changes.showSpeedTest) {
+    document.getElementById('widgetSpeed').style.display = changes.showSpeedTest.newValue ? 'block' : 'none';
+  }
+  if (changes.showGames) {
+    document.getElementById('widgetSnake').style.display = changes.showGames.newValue ? 'block' : 'none';
+    document.getElementById('widgetWordle').style.display = changes.showGames.newValue ? 'block' : 'none';
+  }
+  if (changes.showBookmarks) {
+    if (changes.showBookmarks.newValue && !bm) {
+      bm = new BookmarkManager(document.getElementById('bmCanvas'));
+      bm.showTutorial();
+    } else if (changes.showBookmarks.newValue && bm) {
+      document.querySelector('.bm-section').style.display = '';
+    } else if (!changes.showBookmarks.newValue && bm) {
+      document.querySelector('.bm-section').style.display = 'none';
+    }
+  }
+});
+
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.action === 'settingChanged') {
+    if (msg.key === 'showSearchBar') {
+      document.querySelector('.search-wrap').style.display = msg.value ? '' : 'none';
+    }
+    if (msg.key === 'timeTrackerEnabled') {
+      const el = document.getElementById('statsRow');
+      el.style.display = msg.value ? 'flex' : 'none';
+      if (msg.value) loadTimeData();
+    }
+    if (msg.key === 'showSpeedTest') {
+      document.getElementById('widgetSpeed').style.display = msg.value ? 'block' : 'none';
+    }
+    if (msg.key === 'showGames') {
+      document.getElementById('widgetSnake').style.display = msg.value ? 'block' : 'none';
+      document.getElementById('widgetWordle').style.display = msg.value ? 'block' : 'none';
+    }
+  }
 });
 
 // ── Clock ─────────────────────────────────────────────────────────────────
@@ -229,6 +278,147 @@ setupToggle('toggleWordle', 'bodyWordle', () => {
   wordle = new WordleGame(document.getElementById('bodyWordle'));
   wordle.start();
 });
+
+// ── NTP Layout Manager (drag/resize for all sections) ──────────────────────
+class NtpLayoutManager {
+  constructor() {
+    this.layout = {};
+    this.locked = true;
+    this.drag = null;
+    this.resize = null;
+    this._onMove = this._onMove.bind(this);
+    this._onUp = this._onUp.bind(this);
+    document.addEventListener('mousemove', this._onMove);
+    document.addEventListener('mouseup', this._onUp);
+    this.init();
+  }
+
+  async init() {
+    const sync = await chrome.storage.sync.get(['layoutLocked']);
+    this.locked = sync.layoutLocked !== false;
+
+    const local = await chrome.storage.local.get('ntpLayout');
+    this.layout = local.ntpLayout || {};
+
+    const hasSaved = Object.keys(this.layout).length > 0;
+
+    document.querySelectorAll('[data-ntp-id]').forEach(el => {
+      const id = el.dataset.ntpId;
+      if (hasSaved && this.layout[id]) {
+        this.applyPos(el, id);
+      }
+      this.addHandle(el);
+      this.attach(el, id);
+    });
+
+    document.body.classList.toggle('layout-unlocked', !this.locked);
+
+    chrome.storage.onChanged.addListener(this.onChange.bind(this));
+  }
+
+  applyPos(el, id) {
+    const d = this.layout[id];
+    if (!d) return;
+    el.style.position = 'absolute';
+    el.style.left = d.x + 'px';
+    el.style.top = d.y + 'px';
+    el.style.width = d.w + 'px';
+    if (d.h) el.style.height = d.h + 'px';
+    el.style.margin = '0';
+    if (id === 'clock' || id === 'date') {
+      el.style.whiteSpace = 'nowrap';
+      el.style.width = 'auto';
+      el.style.minWidth = d.w + 'px';
+    }
+  }
+
+  addHandle(el) {
+    if (el.querySelector('.ntp-resize-handle')) return;
+    const h = document.createElement('div');
+    h.className = 'ntp-resize-handle';
+    el.appendChild(h);
+  }
+
+  getRect(el) {
+    const r = el.getBoundingClientRect();
+    return { x: r.left, y: r.top, w: r.width, h: r.height };
+  }
+
+  ensureLayout(id, el) {
+    if (!this.layout[id]) {
+      this.layout[id] = this.getRect(el);
+      this.applyPos(el, id);
+    }
+  }
+
+  attach(el, id) {
+    el._ntpDrag = (e) => {
+      if (this.locked) return;
+      if (e.button !== 0) return;
+      if (e.target.closest('.ntp-resize-handle, .widget-toggle, .search-tab, .search-btn, .bm-add-btn, .bm-help, .bm-ctx, .bm-del, button, input, a')) return;
+      e.preventDefault();
+      this.ensureLayout(id, el);
+      this.drag = { id, el, startX: e.clientX, startY: e.clientY, origX: this.layout[id].x, origY: this.layout[id].y };
+      el.style.zIndex = 999;
+    };
+    el.addEventListener('mousedown', el._ntpDrag);
+
+    const rh = el.querySelector('.ntp-resize-handle');
+    if (rh) {
+      rh._ntpResize = (e) => {
+        if (this.locked) return;
+        e.stopPropagation();
+        e.preventDefault();
+        this.ensureLayout(id, el);
+        this.resize = { id, el, startX: e.clientX, startY: e.clientY, origW: this.layout[id].w, origH: this.layout[id].h };
+      };
+      rh.addEventListener('mousedown', rh._ntpResize);
+    }
+  }
+
+  _onMove(e) {
+    if (this.drag) {
+      const d = this.drag;
+      const dx = e.clientX - d.startX;
+      const dy = e.clientY - d.startY;
+      this.layout[d.id].x = d.origX + dx;
+      this.layout[d.id].y = d.origY + dy;
+      d.el.style.left = this.layout[d.id].x + 'px';
+      d.el.style.top = this.layout[d.id].y + 'px';
+    }
+    if (this.resize) {
+      const r = this.resize;
+      const dw = e.clientX - r.startX;
+      const dh = e.clientY - r.startY;
+      this.layout[r.id].w = Math.max(60, r.origW + dw);
+      this.layout[r.id].h = Math.max(40, r.origH + dh);
+      r.el.style.width = this.layout[r.id].w + 'px';
+      r.el.style.height = this.layout[r.id].h + 'px';
+    }
+  }
+
+  _onUp() {
+    if (this.drag) {
+      this.drag.el.style.zIndex = '';
+      chrome.storage.local.set({ ntpLayout: this.layout });
+      this.drag = null;
+    }
+    if (this.resize) {
+      chrome.storage.local.set({ ntpLayout: this.layout });
+      this.resize = null;
+    }
+  }
+
+  onChange(changes) {
+    if (changes.layoutLocked) {
+      this.locked = changes.layoutLocked.newValue;
+      document.body.classList.toggle('layout-unlocked', !this.locked);
+    }
+  }
+}
+
+// ── Init Layout Manager ──────────────────────────────────────────────────
+const ntpLayout = new NtpLayoutManager();
 
 // ── Bookmark Manager ─────────────────────────────────────────────────────
 let bm = null;
